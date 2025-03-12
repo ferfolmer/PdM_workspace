@@ -1,0 +1,27 @@
+# Build directories
+build/
+Debug/
+Release/
+
+# Object files, executables, and firmware binaries
+*.o
+*.elf
+*.bin
+*.hex
+
+# STM32CubeMX generated files
+*.ioc
+*.mxproject
+
+# IDE specific files (Keil uVision, IAR, etc.)
+*.uvprojx
+*.uvoptx
+*.uvguidx
+*.ewp
+*.eww
+*.ewd
+
+# Miscellaneous
+*.swp
+*.bak
+*~
