@@ -1,5 +1,4 @@
 #include "API_delay.h"
-#include <stddef.h>
 
 void delayInit(delay_t * delay, tick_t duration)
 {
