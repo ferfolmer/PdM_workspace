@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "api_delay.h": "c",
-        "stm32f4xx_hal.h": "c",
-        "api_debounce.h": "c",
-        "main.h": "c",
-        "stm32f4xx_hal_uart.h": "c"
-    }
-}
