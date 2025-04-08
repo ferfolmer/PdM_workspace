@@ -22,7 +22,9 @@ void debounceFSM_update(void);
 /* La función readKey debe leer una variable interna del módulo y devolver
  true o false si la tecla fue presionada.  Si devuelve true, debe resetear
  (poner en false) el estado de la variable.*/
-bool_t readKey(void);
+bool_t readKeyDown(void);
+
+bool_t readKeyUp(void);
 
 
 

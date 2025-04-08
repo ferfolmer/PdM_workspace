@@ -19,12 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
-
+#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "API_delay.h"
 #include "API_debounce.h"
+#include "API_uart.h"
 
 /* USER CODE END Includes */
 
@@ -58,9 +59,10 @@ ETH_HandleTypeDef heth;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-static const uint32_t TIEMPOS[] = {100, 500};
-static const uint8_t CANT_TIEMPOS = sizeof(TIEMPOS) / sizeof(TIEMPOS[0]);
-
+//static const uint32_t TIEMPOS[] = {100, 500};
+//static const uint8_t CANT_TIEMPOS = sizeof(TIEMPOS) / sizeof(TIEMPOS[0]);
+static const char *bufferFlancoDescendente = "Flanco descendente detectado \r\n";
+static const char *bufferFlancoAscendente = "Flanco ascendente detectado \r\n";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +77,12 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static void ledToggle();
+//static void ledToggle();
+static void cleanTerminal();
+
+
+
+
 
 
 
@@ -83,8 +90,31 @@ static void ledToggle();
  * @brief cambia el estado del led respecto al anterior
  *
  */
-static void ledToggle(){
-  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//static void ledToggle(){
+//  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//}
+
+/*
+ * @brief limpia la terminal de la consola
+ *
+ */
+static void cleanTerminal(){
+  const char *clear_cmd = "\x1b[2J\x1b[H";
+  uartSendStringSize((uint8_t*)clear_cmd, strlen(clear_cmd));
+}
+
+static void respondUARTConfig(void) {
+  char uartConfig[128];
+  // Se asumen algunos parámetros de configuración, por ejemplo:
+  int baudRate = 115200;
+  int wordLength = 8;
+  int stopBits = 1;
+  const char *parity = "None";
+
+  sprintf(uartConfig,
+          "UART Configuration:\r\nBaud Rate: %d\r\nWord Length: %d\r\nStop Bits: %d\r\nParity: %s\r\n",
+          baudRate, wordLength, stopBits, parity);
+  uartSendStringSize((uint8_t*)uartConfig, strlen(uartConfig));
 }
 
 /* USER CODE END 0 */
@@ -107,9 +137,9 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   debounceFSM_init();
-  delay_t ledDelay;
-  uint8_t indice = 0;
-  delayInit(&ledDelay, TIEMPOS[indice]);
+//  delay_t ledDelay;
+//  uint8_t indice = 0;
+//  delayInit(&ledDelay, TIEMPOS[indice]);
 
   /* USER CODE END Init */
 
@@ -123,7 +153,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ETH_Init();
-//  MX_USART3_UART_Init();
+  uartInit();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
   
@@ -131,36 +161,36 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t receivedChar = 0;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	debounceFSM_update();
+    
+  	debounceFSM_update();
 
-    if (readKey())
+
+    if (readKeyDown() == true)
     {
-      indice++;
-      if (indice >= CANT_TIEMPOS)
-      {
-        indice = 0;
-      }
-      
-      if (!delayIsRunning(&ledDelay))
-      {
-        delayWrite(&ledDelay, TIEMPOS[indice]);
-      }
-      
+      uartSendString((uint8_t *)bufferFlancoDescendente);
     }
 
-    if (delayRead(&ledDelay))
+    if (readKeyUp() == true)
     {
-      ledToggle();
-      if (!delayIsRunning(&ledDelay))
-      {
-        delayWrite(&ledDelay, TIEMPOS[indice]);
-      }
-      
+      uartSendString((uint8_t *)bufferFlancoAscendente);
+    }
+
+    uartReceiveStringSize(&receivedChar, sizeof(char));
+    if (receivedChar != 0)
+    {
+    	uartSendStringSize(&receivedChar, 1);
+		if (receivedChar == 'c')
+		{
+		  cleanTerminal();
+		  respondUARTConfig();
+		}
+		receivedChar = '\0';
     }
   }
   /* USER CODE END 3 */

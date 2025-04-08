@@ -5,6 +5,9 @@
 
 #define UART_INSTANCE USART3
 #define UART_BAUDRATE 115200
+#define UART_TIMEOUT_SEND 1000
+#define UART_TIMEOUT_RECEIVE 1
+
 
 static UART_HandleTypeDef huart_;
 static const char *uartInitMessage = "UART Initialized with config 8N1\r\n";
@@ -32,13 +35,13 @@ bool_t uartInit() {
 }
 
 void uartSendString(uint8_t * pstring) {
-    HAL_UART_Transmit(&huart_, pstring, strlen((char *)pstring), HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart_, pstring, strlen((char *)pstring), UART_TIMEOUT_SEND);
 }
 
 void uartSendStringSize(uint8_t * pstring, uint16_t size) {
-    HAL_UART_Transmit(&huart_, pstring, size, HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart_, pstring, size, UART_TIMEOUT_SEND);
 }
 
 void uartReceiveStringSize(uint8_t * pstring, uint16_t size) {
-    HAL_UART_Receive(&huart_, pstring, size, HAL_MAX_DELAY);
+    HAL_UART_Receive(&huart_, pstring, size, UART_TIMEOUT_RECEIVE);
 }

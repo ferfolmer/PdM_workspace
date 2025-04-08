@@ -13,6 +13,8 @@ static debounceState_t estado;
 static delay_t delayAntirrebote;
 static const uint32_t debounceTime = 40;
 static bool_t deteccionFlancoDescendente = false;
+static bool_t deteccionFlancoAscendente  = false;
+
 static bool_t readButton(void);
 
 /**@brief wrapper de la funcion HAL readPin para portar a nucleo 429 cambiar
@@ -27,7 +29,7 @@ static bool_t readButton(void){
 void debounceFSM_init()
 {
 	estado = BUTTON_UP;
-	delayInit(&delayAntirrebote, debounceTime); //definir const
+	delayInit(&delayAntirrebote, debounceTime);
 }
 
 void debounceFSM_update()
@@ -66,6 +68,7 @@ void debounceFSM_update()
 		{
 			if (!readButton())
 			{
+				deteccionFlancoAscendente = true;
 				estado = BUTTON_UP;
 			}
 			else
@@ -80,11 +83,18 @@ void debounceFSM_update()
 	}
 }
 
-bool_t readKey()
+bool_t readKeyDown()
 {
     bool_t ret = deteccionFlancoDescendente;
     deteccionFlancoDescendente = false;
     return ret; 
+}
+
+bool_t readKeyUp()
+{
+	bool_t ret = deteccionFlancoAscendente;
+	deteccionFlancoAscendente = false;
+	return ret;
 }
 
 
